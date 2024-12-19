@@ -8,17 +8,59 @@
 <body>
     <h1>Forbidden Sequence Generator</h1>
     <form id="numberForm">
-        <label for="numberInput">Entrez un nombre entre 1 et 1 000 :</label>
+        <label for="numberInput">Enter a number between 1 and 1,000:</label>
         <input type="number" id="numberInput" min="1" max="1000" required>
-        <button type="submit">Soumettre</button>
+        <button type="submit">Submit</button>
     </form>
     <div id="output"></div>
 
-<script>
-    document.getElementById('numberForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-        alert('Formulaire soumis!');
-    });
-</script>
+    <script>
+        document.getElementById('numberForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const numberInput = document.getElementById('numberInput');
+            const N = parseInt(numberInput.value, 10);
+
+            if (isNaN(N) || N < 1 || N > 1000) {
+                alert('Please enter a valid number between 1 and 1,000.');
+                return;
+            }
+
+            
+            document.getElementById('numberForm').style.display = 'none';
+
+            const outputDiv = document.getElementById('output');
+            let current = 1;
+
+            const fetchAndDisplay = () => {
+                if (current > N) return;
+
+                fetch('https://api.prod.jcloudify.com/whoami')
+                    .then(() => {
+                        const line = document.createElement('div');
+                        line.textContent = `${current}. Forbidden`;
+                        outputDiv.appendChild(line);
+                        current++;
+
+                        if (current <= N) {
+                            setTimeout(fetchAndDisplay, 1000); 
+                        }
+                    })
+                    .catch(err => {
+                        console.error('API call error:', err);
+                        const errorLine = document.createElement('div');
+                        errorLine.textContent = `${current}. API Error`;
+                        outputDiv.appendChild(errorLine);
+                        current++;
+
+                        if (current <= N) {
+                            setTimeout(fetchAndDisplay, 1000); 
+                        }
+                    });
+            };
+
+            fetchAndDisplay();
+        });
+    </script>
 </body>
 </html>
